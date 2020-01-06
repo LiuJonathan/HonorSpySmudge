@@ -29,6 +29,8 @@ function HonorSpy:OnInitialize()
 			original_honor = 0
 		}
 	}, true)
+	
+	ObfuscateInitalize();
 
 	self:SecureHook("InspectUnit");
 	self:SecureHook("UnitPopup_ShowMenu");
@@ -430,33 +432,58 @@ function broadcast(msg, skip_yell)
 	end
 end
 
+function ObfuscateInitalize()
+
+	if(not HonorSpy.db.char.percentage) then
+		HonorSpy.db.char.percentage=0.1;
+	end
+		if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==true) then
+		HonorSpy.db.char.obfuscate=true;
+		HonorSpy:Print("Hi "+UnitName("player")+". |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
+		HonorSpy:Print("Current honor modifier: "+(HonorSpy.db.char.percentage * 100)+"%");
+	else
+		HonorSpy:Print("|cFFFF0000HonorSpy is sending your actual data!|r If you wish, reenable with /hs toggle");
+	end
+	
+end
+
+function ObfuscateToggle()
+	if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==false)
+		HonorSpy.db.char.obfuscate=true;
+		HonorSpy:Print("|cFF00FF00HonorSpy will now broadcast faked data to others");
+	else
+		HonorSpy.db.char.obfuscate=false;
+		HonorSpy:Print("|cFFFF0000HonorSpy is no longer obfuscating data");
+	end
+end
+
 -- obfuscate personal data if found
-function obfuscateRepack(msg, skip_yell)
+function ObfuscateRepack(msg, skip_yell)
 	local ok, playerName, player = HonorSpy:Deserialize(msg);
 	if(ok==true) then
 		if (playerName=="filtered_players") then
 			for playerName, playerData in pairs(player) do
 				if(playerName==UnitName("player") then
-					player[playerName]=obfuscateData(playerName,playerData);
+					player[playerName]=ObfuscateData(playerName,playerData);
 				end
 			end
 		end
 	else 
-		displayError("Error occurred unpacking data. Your data is not being broadcast", "broadcastFailureMessages");
+		ObfuscateDisplayError("|cFFFF0000Error occurred unpacking HonorSpy data for obfuscating.|r Your data is not being broadcast", "broadcastFailureMessages");
 	end
 	msg=HonorSpy:Serialize(playerName,player);
 	skip_yell=false;
 	return msg, skip_yell;
 end
 
-function obfuscateData(playerName,player) 
+function ObfuscateData(playerName,player) 
 	player.thisWeekHonor=player.thisWeekHonor*0.95;
 	player.lastWeekHonor=player.lastWeekHonor*0.95;
 	player.RP=player.lastWeekHonor*0.95;
 	return player;
 end
 
-function displayError(msg, countVar) then
+function ObfuscateDisplayError(msg, countVar) then
 	if (_G[countVar]>1) then
 		HonorSpy:Print(msg);
 		_G[countVar]=_G[countVar]-1;
