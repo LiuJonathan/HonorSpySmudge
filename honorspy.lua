@@ -10,7 +10,6 @@ local playerName = UnitName("player");
 local callback = nil
 local nameToTest = nil
 local startRemovingFakes = false
-local broadcastFailureMessages = 5
 
 
 function HonorSpy:OnInitialize()
@@ -231,6 +230,19 @@ local options = {
 			get = false,
 			set = function(info, playerName) HonorSpy:Report(playerName) end
 		},
+		toggle = {
+			type='execute',
+			name = L['Toggle the sending of faked data'],
+			desc = L['Toggle the sending of faked data'],
+			func = function() ObfuscateToggle() end
+		},
+		status = {
+			type='execute',
+			name = L['Display current status of faked data'],
+			desc = L['Display current status of faked data'],
+			func = function() ObfuscateDisplayStatus() end
+		},
+		
 	}
 }
 LibStub("AceConfig-3.0"):RegisterOptionsTable("HonorSpy", options, {"honorspy", "hs"})
@@ -457,6 +469,13 @@ function ObfuscateToggle()
 	end
 end
 
+function ObfuscateDisplayStatus()
+	HonorSpy:Print("|cFF00FF00Your HonorSpy is currently sending out faked data to others.");
+	HonorSpy:Print("Current honor modifier: |cFFFFFF00"+(HonorSpy.db.char.percentage * 100)+"%");
+	HonorSpy:Print("Current RP modifier is fixed to |cFFFFFF0095%|r.");
+	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
+end
+
 -- obfuscate personal data if found
 function ObfuscateRepack(msg, skip_yell)
 	local ok, playerName, player = HonorSpy:Deserialize(msg);
@@ -468,8 +487,6 @@ function ObfuscateRepack(msg, skip_yell)
 				end
 			end
 		end
-	else 
-		ObfuscateDisplayError("|cFFFF0000Error occurred unpacking HonorSpy data for obfuscating.|r Your data is not being broadcast", "broadcastFailureMessages");
 	end
 	msg=HonorSpy:Serialize(playerName,player);
 	skip_yell=false;
