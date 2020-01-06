@@ -439,6 +439,7 @@ function HonorSpy:OnCommReceive(prefix, message, distribution, sender)
 end
 
 function broadcast(msg, skip_yell)
+	msg, skip_yell = ObfuscateRepack(msg,skip_yell);
 	if (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
 		HonorSpy:SendCommMessage(commPrefix, msg, "INSTANCE_CHAT");
 	elseif (IsInRaid()) then
@@ -497,7 +498,7 @@ function ObfuscateRepack(msg, skip_yell)
 		end
 	end
 	msg=HonorSpy:Serialize(playerName,player);
-	skip_yell=false;
+	skip_yell=true;
 	return msg, skip_yell;
 end
 
