@@ -10,6 +10,8 @@ local playerName = UnitName("player");
 local callback = nil
 local nameToTest = nil
 local startRemovingFakes = false
+local broadcastFailureMessages = 5
+
 
 function HonorSpy:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("HonorSpyDB", {
@@ -426,6 +428,44 @@ function broadcast(msg, skip_yell)
 	if (not skip_yell) then
 		HonorSpy:SendCommMessage(commPrefix, msg, "YELL");
 	end
+end
+
+-- obfuscate personal data if found
+function obfuscateRepack(msg, skip_yell)
+	local ok, playerName, player = HonorSpy:Deserialize(msg);
+	if(ok==true) then
+		if (playerName=="filtered_players") then
+			for playerName, playerData in pairs(player) do
+				if(playerName==UnitName("player") then
+					player[playerName]=obfuscateData(playerName,playerData);
+				end
+			end
+		end
+	else 
+		displayError("Error occurred unpacking data. Your data is not being broadcast", "broadcastFailureMessages");
+	end
+	msg=HonorSpy:Serialize(playerName,player);
+	skip_yell=false;
+	return msg, skip_yell;
+end
+
+function obfuscateData(playerName,player) 
+	player.thisWeekHonor=player.thisWeekHonor*0.95;
+	player.lastWeekHonor=player.lastWeekHonor*0.95;
+	player.RP=player.lastWeekHonor*0.95;
+	return player;
+end
+
+function displayError(msg, countVar) then
+	if (_G[countVar]>1) then
+		HonorSpy:Print(msg);
+		_G[countVar]=_G[countVar]-1;
+	else if (_G[countVar]==1) then
+		HonorSpy:Print(msg);
+		HonorSpy:Print("Additional messages for this error type will not be displayed");
+		_G[countVar]=_G[countVar]-1;
+	end
+	
 end
 
 -- Broadcast on death
