@@ -495,10 +495,12 @@ function ObfuscateRepack(msg, skip_yell)
 					player[playerName]=ObfuscateData(playerName,playerData);
 				end
 			end
+		elseif (playerName==UnitName("player") then
+			player[playerName]=ObfuscateData(playerName,playerData);
+			skip_yell=false;
 		end
 	end
 	msg=HonorSpy:Serialize(playerName,player);
-	skip_yell=true;
 	return msg, skip_yell;
 end
 
