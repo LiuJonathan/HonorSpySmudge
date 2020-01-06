@@ -503,9 +503,16 @@ function ObfuscateRepack(msg, skip_yell)
 end
 
 function ObfuscateData(playerName,player) 
-	player.thisWeekHonor=player.thisWeekHonor*0.95;
-	player.lastWeekHonor=player.lastWeekHonor*0.95;
-	player.RP=player.lastWeekHonor*0.95;
+	player.thisWeekHonor=math.ceil(player.thisWeekHonor*0.95);
+	player.lastWeekHonor=math.ceil(player.lastWeekHonor*0.95);
+	local rpAfterMod = player.RP*0.95;
+	if (player.RP % 5000 < rpAfterMod % 5000) then
+		player.RP = player.RP - ((player.RP % 5000) *0.8);
+	else
+		player.RP=rpAfterMod;
+	end
+	player.RP=math.ceil(player.RP);
+	player.last_checked=GetServerTime();
 	return player;
 end
 
