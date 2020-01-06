@@ -11,7 +11,6 @@ local callback = nil
 local nameToTest = nil
 local startRemovingFakes = false
 
-
 function HonorSpy:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("HonorSpyDB", {
 		factionrealm = {
@@ -242,7 +241,16 @@ local options = {
 			desc = L['Display current status of faked data'],
 			func = function() ObfuscateDisplayStatus() end
 		},
-		
+		setmodifier = {
+			type = 'range',
+			name = L['Sets modifier for faked data'],
+			desc = L['Sets modifier for faked data'],
+			usage = L['modifier'],
+			min = 0.0,
+			max = 10.0,
+			get = false,
+			set = function(info, modifier) HonorSpy.db.char.modifier=modifier; HonorSpy:Print("Modifier for fake data set to "+(modifier*100)+"%."); end
+		},
 	}
 }
 LibStub("AceConfig-3.0"):RegisterOptionsTable("HonorSpy", options, {"honorspy", "hs"})
@@ -446,13 +454,13 @@ end
 
 function ObfuscateInitalize()
 
-	if(not HonorSpy.db.char.percentage) then
-		HonorSpy.db.char.percentage=0.1;
+	if(not HonorSpy.db.char.modifier) then
+		HonorSpy.db.char.modifier=0.1;
 	end
 		if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==true) then
 		HonorSpy.db.char.obfuscate=true;
 		HonorSpy:Print("Hi "+UnitName("player")+". |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
-		HonorSpy:Print("Current honor modifier: "+(HonorSpy.db.char.percentage * 100)+"%");
+		HonorSpy:Print("Current honor modifier: "+(HonorSpy.db.char.modifier * 100)+"%");
 	else
 		HonorSpy:Print("|cFFFF0000HonorSpy is sending your actual data!|r If you wish, reenable with /hs toggle");
 	end
@@ -471,7 +479,7 @@ end
 
 function ObfuscateDisplayStatus()
 	HonorSpy:Print("|cFF00FF00Your HonorSpy is currently sending out faked data to others.");
-	HonorSpy:Print("Current honor modifier: |cFFFFFF00"+(HonorSpy.db.char.percentage * 100)+"%");
+	HonorSpy:Print("Current honor modifier: |cFFFFFF00"+(HonorSpy.db.char.modifier * 100)+"%");
 	HonorSpy:Print("Current RP modifier is fixed to |cFFFFFF0095%|r.");
 	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
 end
@@ -501,12 +509,15 @@ function ObfuscateData(playerName,player)
 end
 
 function ObfuscateDisplayError(msg, countVar) then
+	if (not countVar) then
+		countVar="errorLimit";
+	end
 	if (_G[countVar]>1) then
 		HonorSpy:Print(msg);
 		_G[countVar]=_G[countVar]-1;
 	else if (_G[countVar]==1) then
 		HonorSpy:Print(msg);
-		HonorSpy:Print("Additional messages for this error type will not be displayed");
+		HonorSpy:Print("Additional error messages will not be displayed. HonorSpy is likely not working correctly.");
 		_G[countVar]=_G[countVar]-1;
 	end
 	
