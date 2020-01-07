@@ -241,12 +241,14 @@ local options = {
 			desc = L['Display current status of faked data'],
 			func = function() ObfuscateDisplayStatus() end
 		},
-		setmodifier = {
-			type = 'input',
+		modifier = {
+			type = 'range',
 			name = L['Sets modifier for faked data'],
 			desc = L['Sets modifier for faked data'],
-			usage = L['modifier'],
-			set = function(info, modifier) HonorSpy.db.char.modifier=modifier; HonorSpy:Print("Modifier for fake data set to "+(modifier*100)+"%."); end
+			min = 0.0,
+			max = 10.0,
+			step = 0.1;
+			set = function(info, modifier) HonorSpy.db.char.modifier=modifier/100; HonorSpy:Print("Modifier for fake data set to |cFFFFFF00"..modifier.."%.") end
 		},
 	}
 }
@@ -475,7 +477,11 @@ function ObfuscateToggle()
 end
 
 function ObfuscateDisplayStatus()
-	HonorSpy:Print("|cFF00FF00Your HonorSpy is currently sending out faked data to others.");
+	if(HonorSpy.db.char.obfuscate==true) then
+		HonorSpy:Print("|cFF00FF00Your HonorSpy is currently sending out faked data to others.");
+	else
+		HonorSpy:Print("|cFFFF0000Your HonorSpy is not obfuscating data!");
+	end
 	HonorSpy:Print("Current honor modifier: |cFFFFFF00"..(HonorSpy.db.char.modifier * 100).."%");
 	HonorSpy:Print("Current RP modifier is fixed to |cFFFFFF0095%|r.");
 	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
