@@ -28,8 +28,6 @@ function HonorSpy:OnInitialize()
 		}
 	}, true)
 	
-	ObfuscateInitalize();
-
 	self:SecureHook("InspectUnit");
 	self:SecureHook("UnitPopup_ShowMenu");
 
@@ -47,6 +45,8 @@ function HonorSpy:OnInitialize()
 	HonorSpyGUI:PrepareGUI()
 	PrintWelcomeMsg();
 	DBHealthCheck()
+	
+	ObfuscateInitalize();
 end
 
 local inspectedPlayers = {}; -- stores last_checked time of all players met
@@ -228,9 +228,9 @@ local options = {
 			usage = L['player_name'],
 			get = false,
 			set = function(info, playerName) HonorSpy:Report(playerName) end
-		},
+		},	
 		toggle = {
-			type='execute',
+			type = 'execute',
 			name = L['Toggle the sending of faked data'],
 			desc = L['Toggle the sending of faked data'],
 			func = function() ObfuscateToggle() end
@@ -242,13 +242,10 @@ local options = {
 			func = function() ObfuscateDisplayStatus() end
 		},
 		setmodifier = {
-			type = 'range',
+			type = 'input',
 			name = L['Sets modifier for faked data'],
 			desc = L['Sets modifier for faked data'],
 			usage = L['modifier'],
-			min = 0.0,
-			max = 10.0,
-			get = false,
 			set = function(info, modifier) HonorSpy.db.char.modifier=modifier; HonorSpy:Print("Modifier for fake data set to "+(modifier*100)+"%."); end
 		},
 	}
@@ -439,7 +436,7 @@ function HonorSpy:OnCommReceive(prefix, message, distribution, sender)
 end
 
 function broadcast(msg, skip_yell)
-	msg, skip_yell = ObfuscateRepack(msg,skip_yell);
+	--msg, skip_yell = ObfuscateRepack(msg,skip_yell);
 	if (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
 		HonorSpy:SendCommMessage(commPrefix, msg, "INSTANCE_CHAT");
 	elseif (IsInRaid()) then
@@ -454,14 +451,13 @@ function broadcast(msg, skip_yell)
 end
 
 function ObfuscateInitalize()
-
 	if(not HonorSpy.db.char.modifier) then
-		HonorSpy.db.char.modifier=0.1;
+		HonorSpy.db.char.modifier=0.9;
 	end
-		if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==true) then
+	if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==true) then
 		HonorSpy.db.char.obfuscate=true;
-		HonorSpy:Print("Hi "+UnitName("player")+". |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
-		HonorSpy:Print("Current honor modifier: "+(HonorSpy.db.char.modifier * 100)+"%");
+		HonorSpy:Print("Hi ".. UnitName("player") .. ". |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
+		HonorSpy:Print("Current honor modifier: " .. (HonorSpy.db.char.modifier * 100).."%");
 	else
 		HonorSpy:Print("|cFFFF0000HonorSpy is sending your actual data!|r If you wish, reenable with /hs toggle");
 	end
@@ -469,7 +465,7 @@ function ObfuscateInitalize()
 end
 
 function ObfuscateToggle()
-	if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==false)
+	if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==false) then
 		HonorSpy.db.char.obfuscate=true;
 		HonorSpy:Print("|cFF00FF00HonorSpy will now broadcast faked data to others");
 	else
@@ -480,7 +476,7 @@ end
 
 function ObfuscateDisplayStatus()
 	HonorSpy:Print("|cFF00FF00Your HonorSpy is currently sending out faked data to others.");
-	HonorSpy:Print("Current honor modifier: |cFFFFFF00"+(HonorSpy.db.char.modifier * 100)+"%");
+	HonorSpy:Print("Current honor modifier: |cFFFFFF00"..(HonorSpy.db.char.modifier * 100).."%");
 	HonorSpy:Print("Current RP modifier is fixed to |cFFFFFF0095%|r.");
 	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
 end
