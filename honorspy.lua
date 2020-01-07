@@ -496,9 +496,9 @@ function ObfuscateDisplayStatus()
 		currentHonor=math.ceil(currentHonor*HonorSpy.db.char.modifier);
 		lastHonor=math.ceil(lastHonor*HonorSpy.db.char.modifier);
 	end
-	HonorSpy:Print("Your current honor is displayed as: |cFFFFFF00"..currentHonor);
-	HonorSpy:Print("Last week's honor is displayed as: |cFFFFFF00"..lastHonor);
-	HonorSpy:Print("Your RP is displayed as: |cFFFFFF00"..ObfuscateCalculateRP(player.RP));
+	HonorSpy:Print("Others see your current honor as: |cFFFFFF00"..currentHonor);
+	HonorSpy:Print("Others see your last week's honor as: |cFFFFFF00"..lastHonor);
+	HonorSpy:Print("Others see your RP as: |cFFFFFF00"..ObfuscateCalculateRP(player.RP));
 end
 
 -- obfuscate personal data if found
