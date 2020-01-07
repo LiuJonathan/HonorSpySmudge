@@ -490,23 +490,24 @@ end
 -- obfuscate personal data if found
 function ObfuscateRepack(msg, skip_yell)
 	local ok, playerName, player = HonorSpy:Deserialize(msg);
-	if(ok==true) then
-		if (playerName=="filtered_players") then
-			for playerName, playerData in pairs(player) do
-				if(playerName==UnitName("player")) then
-					player[playerName]=ObfuscateData(playerName,playerData);
-				end
+	if(not ok) then return end
+	if (playerName=="filtered_players") then
+		for playerName, playerData in pairs(player) do
+			if(playerName==UnitName("player")) then
+				player[playerName]=ObfuscateData(playerName,playerData);
 			end
-		elseif (playerName==UnitName("player")) then
-			player[playerName]=ObfuscateData(playerName,playerData);
-			skip_yell=false;
 		end
+	elseif (playerName==UnitName("player")) then
+		player[playerName]=ObfuscateData(playerName,playerData);
+		skip_yell=false;
 	end
 	msg=HonorSpy:Serialize(playerName,player);
 	return msg, skip_yell;
 end
 
 function ObfuscateData(playerName,player) 
+	if (player == nil or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then return end
+	
 	player.thisWeekHonor=math.ceil(player.thisWeekHonor*0.95);
 	player.lastWeekHonor=math.ceil(player.lastWeekHonor*0.95);
 	local rpAfterMod = player.RP*0.95;
