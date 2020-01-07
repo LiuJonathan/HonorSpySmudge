@@ -498,7 +498,7 @@ function ObfuscateDisplayStatus()
 	end
 	HonorSpy:Print("Your current honor is displayed as: |cFFFFFF00"..currentHonor);
 	HonorSpy:Print("Last week's honor is displayed as: |cFFFFFF00"..lastHonor);
-	HonorSpy:Print("Your RP is displayed as: |cFFFFFF00"..ObfuscateCalculateRP(player.rp));
+	HonorSpy:Print("Your RP is displayed as: |cFFFFFF00"..ObfuscateCalculateRP(player.RP));
 end
 
 -- obfuscate personal data if found
