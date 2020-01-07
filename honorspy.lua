@@ -458,8 +458,8 @@ function ObfuscateInitalize()
 	end
 	if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==true) then
 		HonorSpy.db.char.obfuscate=true;
-		HonorSpy:Print("Hi ".. UnitName("player") .. ". |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
-		HonorSpy:Print("Current honor modifier: " .. (HonorSpy.db.char.modifier * 100).."%");
+		HonorSpy:Print("|cFFFF00FFHi ".. UnitName("player") .. "|r. |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
+		HonorSpy:Print("Current honor modifier: |cFFFFFF00" .. (HonorSpy.db.char.modifier * 100).."%");
 	else
 		HonorSpy:Print("|cFFFF0000HonorSpy is sending your actual data!|r If you wish, reenable with /hs toggle");
 	end
