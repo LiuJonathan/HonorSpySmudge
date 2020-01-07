@@ -512,7 +512,7 @@ function ObfuscateRepack(msg, skip_yell)
 			end
 		end
 	elseif (playerName==UnitName("player")) then
-		player[playerName]=ObfuscateData(playerName,playerData);
+		player=ObfuscateData(playerName,playerData);
 		skip_yell=false;
 	end
 	msg=HonorSpy:Serialize(playerName,player);
