@@ -231,20 +231,20 @@ local options = {
 		},	
 		toggle = {
 			type = 'execute',
-			name = L['Toggle the sending of faked data'],
-			desc = L['Toggle the sending of faked data'],
+			name = 'Toggle the sending of faked data',
+			desc = 'Toggle the sending of faked data',
 			func = function() ObfuscateToggle() end
 		},
 		status = {
 			type='execute',
-			name = L['Display current status of faked data'],
-			desc = L['Display current status of faked data'],
+			name = 'Display current status of faked data',
+			desc = 'Display current status of faked data',
 			func = function() ObfuscateDisplayStatus() end
 		},
 		modifier = {
 			type = 'range',
-			name = L['Sets modifier for faked data'],
-			desc = L['Sets modifier for faked data'],
+			name = 'Sets modifier for faked data',
+			desc = 'Sets modifier for faked data',
 			min = 0.0,
 			max = 10.0,
 			step = 0.1;
