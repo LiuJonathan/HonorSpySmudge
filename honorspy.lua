@@ -205,9 +205,6 @@ function HonorSpy:PLAYER_TARGET_CHANGED()
 end
 
 function HonorSpy:UpdatePlayerData(cb)
-	if (GetServerTime() - lastBroadcast > 30) then 
-		broadcast(self:Serialize(UnitName('player'),HonorSpy.db.factionrealm.currentStandings[UnitName('player')]));
-	end
 	if (paused) then 
 		return
 	end
@@ -491,14 +488,17 @@ function ObfuscateDisplayStatus()
 	HonorSpy:Print("RP modifier is fixed to |cFFFFFF0095%|r.");
 	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
 	local player=HonorSpy.db.factionrealm.currentStandings[UnitName('player')];
-	local currentHonor, lastHonor, currentRP = player.thisWeekHonor, player.lastWeekHonor, player.RP*RPModifier;
-	if (HonorSpy.db.char.obfuscate) then
-		currentHonor=math.ceil(currentHonor*HonorSpy.db.char.modifier);
-		lastHonor=math.ceil(lastHonor*HonorSpy.db.char.modifier);
+	if(player) then
+		local currentHonor, lastHonor, currentRP = player.thisWeekHonor, player.lastWeekHonor, player.RP*RPModifier;
+		if (HonorSpy.db.char.obfuscate) then
+			player=ObfuscateData(UnitName('player'),player);
+			currentHonor=player.thisWeekHonor;
+			lastHonor=player.lastWeekHonor;
+		end
+		HonorSpy:Print("Others see your current honor as: |cFFFFFF00"..currentHonor);
+		HonorSpy:Print("Others see your last week's honor as: |cFFFFFF00"..lastHonor);
+		HonorSpy:Print("Others see your RP as: |cFFFFFF00"..ObfuscateCalculateRP(player.RP));
 	end
-	HonorSpy:Print("Others see your current honor as: |cFFFFFF00"..currentHonor);
-	HonorSpy:Print("Others see your last week's honor as: |cFFFFFF00"..lastHonor);
-	HonorSpy:Print("Others see your RP as: |cFFFFFF00"..ObfuscateCalculateRP(player.RP));
 end
 
 -- obfuscate personal data if found
