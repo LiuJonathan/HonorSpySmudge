@@ -11,6 +11,7 @@ local callback = nil
 local nameToTest = nil
 local startRemovingFakes = false
 local lastBroadcast=GetServerTime();
+local RPModifier = 0.95;
 
 function HonorSpy:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("HonorSpyDB", {
@@ -486,9 +487,18 @@ function ObfuscateDisplayStatus()
 	else
 		HonorSpy:Print("|cFFFF0000Your HonorSpy is not obfuscating data!");
 	end
-	HonorSpy:Print("Current honor modifier: |cFFFFFF00"..(HonorSpy.db.char.modifier * 100).."%");
-	HonorSpy:Print("Current RP modifier is fixed to |cFFFFFF0095%|r.");
+	HonorSpy:Print("Honor modifier: |cFFFFFF00"..(HonorSpy.db.char.modifier * 100).."%");
+	HonorSpy:Print("RP modifier is fixed to |cFFFFFF0095%|r.");
 	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
+	local player=HonorSpy.db.factionrealm.currentStandings[UnitName('player')];
+	local currentHonor, lastHonor, currentRP = player.thisWeekHonor, player.lastWeekHonor, player.RP*RPModifier;
+	if (HonorSpy.db.char.obfuscate) then
+		currentHonor=math.ceil(currentHonor*HonorSpy.db.char.modifier);
+		lastHonor=math.ceil(lastHonor*HonorSpy.db.char.modifier);
+	end
+	HonorSpy:Print("Your current honor is displayed as: |cFFFFFF00"..currentHonor);
+	HonorSpy:Print("Last week's honor is displayed as: |cFFFFFF00"..lastWeekHonor);
+	HonorSpy:Print("Your RP is displayed as: |cFFFFFF00"..ObfuscateCalculateRP(player.rp));
 end
 
 -- obfuscate personal data if found
@@ -512,17 +522,21 @@ end
 function ObfuscateData(playerName,player) 
 	if (player == nil or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then return end
 	
-	player.thisWeekHonor=math.ceil(player.thisWeekHonor*0.95);
-	player.lastWeekHonor=math.ceil(player.lastWeekHonor*0.95);
-	local rpAfterMod = player.RP*0.95;
-	if (player.RP % 5000 < rpAfterMod % 5000) then
-		player.RP = player.RP - ((player.RP % 5000) *0.8);
-	else
-		player.RP=rpAfterMod;
-	end
-	player.RP=math.ceil(player.RP);
+	player.thisWeekHonor=math.ceil(player.thisWeekHonor*HonorSpy.db.char.modifier);
+	player.lastWeekHonor=math.ceil(player.lastWeekHonor*HonorSpy.db.char.modifier);
+	player.RP=ObfuscateCalculateRP(player.RP);
 	player.last_checked=GetServerTime();
 	return player;
+end
+
+function ObfuscateCalculateRP(RP)
+	local rpAfterMod = RP*RPModifier;
+	if (RP % 5000 < rpAfterMod % 5000) then
+		RP = player.RP - ((RP % 5000) *0.8);
+	else
+		RP=rpAfterMod;
+	end
+	return math.ceil(RP);
 end
 --[[
 function ObfuscateDisplayError(msg, countVar) then
