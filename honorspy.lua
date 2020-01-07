@@ -436,7 +436,7 @@ function HonorSpy:OnCommReceive(prefix, message, distribution, sender)
 end
 
 function broadcast(msg, skip_yell)
-	--msg, skip_yell = ObfuscateRepack(msg,skip_yell);
+	msg, skip_yell = ObfuscateRepack(msg,skip_yell);
 	if (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
 		HonorSpy:SendCommMessage(commPrefix, msg, "INSTANCE_CHAT");
 	elseif (IsInRaid()) then
@@ -487,11 +487,11 @@ function ObfuscateRepack(msg, skip_yell)
 	if(ok==true) then
 		if (playerName=="filtered_players") then
 			for playerName, playerData in pairs(player) do
-				if(playerName==UnitName("player") then
+				if(playerName==UnitName("player")) then
 					player[playerName]=ObfuscateData(playerName,playerData);
 				end
 			end
-		elseif (playerName==UnitName("player") then
+		elseif (playerName==UnitName("player")) then
 			player[playerName]=ObfuscateData(playerName,playerData);
 			skip_yell=false;
 		end
@@ -513,7 +513,7 @@ function ObfuscateData(playerName,player)
 	player.last_checked=GetServerTime();
 	return player;
 end
-
+--[[
 function ObfuscateDisplayError(msg, countVar) then
 	if (not countVar) then
 		countVar="errorLimit";
@@ -527,7 +527,7 @@ function ObfuscateDisplayError(msg, countVar) then
 		_G[countVar]=_G[countVar]-1;
 	end
 	
-end
+end]]
 
 -- Broadcast on death
 local last_send_time = 0;
