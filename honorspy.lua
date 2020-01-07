@@ -10,6 +10,7 @@ local playerName = UnitName("player");
 local callback = nil
 local nameToTest = nil
 local startRemovingFakes = false
+local lastBroadcast=GetServerTime();
 
 function HonorSpy:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("HonorSpyDB", {
@@ -203,6 +204,9 @@ function HonorSpy:PLAYER_TARGET_CHANGED()
 end
 
 function HonorSpy:UpdatePlayerData(cb)
+	if (GetServerTime() - lastBroadcast > 30) then 
+		broadcast(self:Serialize(UnitName('player'),HonorSpy.db.factionrealm.currentStandings[UnitName('player')]));
+	end
 	if (paused) then 
 		return
 	end
