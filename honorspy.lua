@@ -10,7 +10,7 @@ local playerName = UnitName("player");
 local callback = nil
 local nameToTest = nil
 local startRemovingFakes = false
-local lastBroadcast=GetServerTime();
+local lastSelfBroadcast=GetServerTime();
 local RPModifier = 0.95;
 
 function HonorSpy:OnInitialize()
@@ -199,6 +199,10 @@ end
 -- INSPECTION TRIGGERS
 function HonorSpy:UPDATE_MOUSEOVER_UNIT()
 	StartInspecting("mouseover")
+	if (GetServerTime() - lastSelfBroadcast > 60) then
+		broadcast(self:Serialize(UnitName('player'),HonorSpy.db.factionrealm.currentStandings[UnitName('player')]));
+		lastSelfBroadcast=GetServerTime();
+	end
 end
 function HonorSpy:PLAYER_TARGET_CHANGED()
 	StartInspecting("target")
@@ -455,10 +459,10 @@ function broadcast(msg, skip_yell)
 end
 
 function ObfuscateInitalize()
-	if(not HonorSpy.db.char.modifier) then
+	if(HonorSpy.db.char.modifier == nil) then
 		HonorSpy.db.char.modifier=0.9;
 	end
-	if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==true) then
+	if(HonorSpy.db.char.obfuscate ==nil or HonorSpy.db.char.obfuscate==true) then
 		HonorSpy.db.char.obfuscate=true;
 		HonorSpy:Print("|cFFFF00FFHi ".. UnitName("player") .. "|r. |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
 		HonorSpy:Print("Current honor modifier: |cFFFFFF00" .. (HonorSpy.db.char.modifier * 100).."%");
@@ -469,7 +473,7 @@ function ObfuscateInitalize()
 end
 
 function ObfuscateToggle()
-	if(not HonorSpy.db.char.obfuscate or HonorSpy.db.char.obfuscate==false) then
+	if(HonorSpy.db.char.obfuscate==false) then
 		HonorSpy.db.char.obfuscate=true;
 		HonorSpy:Print("|cFF00FF00HonorSpy will now broadcast faked data to others");
 	else
@@ -503,6 +507,7 @@ end
 
 -- obfuscate personal data if found
 function ObfuscateRepack(msg, skip_yell)
+	if(HonorSpy.db.char.obfuscate==false) then return end 
 	local ok, playerName, player = HonorSpy:Deserialize(msg);
 	if(not ok) then return end
 	if (playerName=="filtered_players") then
@@ -520,7 +525,10 @@ function ObfuscateRepack(msg, skip_yell)
 end
 
 function ObfuscateData(playerName,player) 
-	if (player == nil or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then return end
+	if (player == nil or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then 
+		HonorSpy:Print('attempted to obfuscate bad player');
+		return 		
+	end
 	
 	player.thisWeekHonor=math.ceil(player.thisWeekHonor*HonorSpy.db.char.modifier);
 	player.lastWeekHonor=math.ceil(player.lastWeekHonor*HonorSpy.db.char.modifier);
