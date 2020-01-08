@@ -462,6 +462,9 @@ function ObfuscateInitalize()
 	if(HonorSpy.db.char.modifier == nil) then
 		HonorSpy.db.char.modifier=0.9;
 	end
+	if(HonorSpy.db.char.lastModifier==nil) then
+		HonorSpy.db.char.lastModifier=1;
+	end
 	if(HonorSpy.db.char.obfuscate ==nil or HonorSpy.db.char.obfuscate==true) then
 		HonorSpy.db.char.obfuscate=true;
 		HonorSpy:Print("|cFFFF00FFHi ".. UnitName("player") .. "|r. |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
@@ -489,6 +492,7 @@ function ObfuscateDisplayStatus()
 		HonorSpy:Print("|cFFFF0000Your HonorSpy is not obfuscating data!");
 	end
 	HonorSpy:Print("Honor modifier: |cFFFFFF00"..(HonorSpy.db.char.modifier * 100).."%");
+	HonorSpy:Print("Last week's modifier: |cFFFFFF00"..(HonorSpy.db.char.lastModifier * 100).."%");
 	HonorSpy:Print("RP modifier is fixed to |cFFFFFF0095%|r.");
 	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
 	local player=HonorSpy.db.factionrealm.currentStandings[UnitName('player')];
@@ -507,7 +511,7 @@ end
 
 -- obfuscate personal data if found
 function ObfuscateRepack(msg, skip_yell)
-	if(HonorSpy.db.char.obfuscate==false) then return end 
+	if(HonorSpy.db.char.obfuscate==false) then return msg,skip_yell end 
 	local ok, playerName, player = HonorSpy:Deserialize(msg);
 	if(not ok) then return end
 	if (playerName=="filtered_players") then
@@ -531,7 +535,7 @@ function ObfuscateData(playerName,player)
 	end
 	
 	player.thisWeekHonor=math.ceil(player.thisWeekHonor*HonorSpy.db.char.modifier);
-	player.lastWeekHonor=math.ceil(player.lastWeekHonor*HonorSpy.db.char.modifier);
+	player.lastWeekHonor=math.ceil(player.lastWeekHonor*HonorSpy.db.char.lastModifier);
 	player.RP=ObfuscateCalculateRP(player.RP);
 	player.last_checked=GetServerTime();
 	return player;
@@ -687,7 +691,9 @@ end
 function HonorSpy:ResetWeek()
 	HonorSpy.db.factionrealm.last_reset = getResetTime();
 	HonorSpy:Purge()
+	HonorSpy.db.char.lastModifier=HonorSpy.db.char.modifier;
 	HonorSpy:Print(L["Weekly data was reset"]);
+	HonorSpy:Print("Honor modifier for last week's data has been updated!");
 end
 
 function HonorSpy:CheckNeedReset(skipUpdate)
