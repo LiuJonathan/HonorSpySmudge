@@ -491,8 +491,8 @@ function ObfuscateDisplayStatus()
 	else
 		HonorSpy:Print("|cFFFF0000Your HonorSpy is not obfuscating data!");
 	end
-	HonorSpy:Print("Honor modifier: |cFFFFFF00"..(HonorSpy.db.char.modifier * 100).."%");
-	HonorSpy:Print("Last week's modifier: |cFFFFFF00"..(HonorSpy.db.char.lastModifier * 100).."%");
+	HonorSpy:Print("This week's honor modifier: |cFFFFFF00"..(HonorSpy.db.char.modifier * 100).."%");
+	HonorSpy:Print("Last week's honor modifier: |cFFFFFF00"..(HonorSpy.db.char.lastModifier * 100).."%");
 	HonorSpy:Print("RP modifier is fixed to |cFFFFFF0095%|r.");
 	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
 	local player=HonorSpy.db.factionrealm.currentStandings[UnitName('player')];
@@ -511,17 +511,18 @@ end
 
 -- obfuscate personal data if found
 function ObfuscateRepack(msg, skip_yell)
-	if(HonorSpy.db.char.obfuscate==false) then return msg,skip_yell end 
+	if(HonorSpy.db.char.obfuscate==false) then return msg,skip_yell; end 
 	local ok, playerName, player = HonorSpy:Deserialize(msg);
-	if(not ok) then return end
+
+	if(not ok) then return msg, skip_yell; end
 	if (playerName=="filtered_players") then
-		for playerName, playerData in pairs(player) do
-			if(playerName==UnitName("player")) then
-				player[playerName]=ObfuscateData(playerName,playerData);
+		for name, data in pairs(player) do
+			if(name==UnitName("player")) then
+				player[name]=ObfuscateData(name,data);
 			end
 		end
 	elseif (playerName==UnitName("player")) then
-		player=ObfuscateData(playerName,playerData);
+		player=ObfuscateData(playerName,player);
 		skip_yell=false;
 	end
 	msg=HonorSpy:Serialize(playerName,player);
@@ -530,10 +531,8 @@ end
 
 function ObfuscateData(playerName,player) 
 	if (player == nil or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then 
-		HonorSpy:Print('attempted to obfuscate bad player');
 		return 		
 	end
-	
 	player.thisWeekHonor=math.ceil(player.thisWeekHonor*HonorSpy.db.char.modifier);
 	player.lastWeekHonor=math.ceil(player.lastWeekHonor*HonorSpy.db.char.lastModifier);
 	player.RP=ObfuscateCalculateRP(player.RP);
