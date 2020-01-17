@@ -499,9 +499,8 @@ function ObfuscateDisplayStatus()
 	if(player) then
 		local currentHonor, lastHonor, currentRP = player.thisWeekHonor, player.lastWeekHonor, player.RP*RPModifier;
 		if (HonorSpy.db.char.obfuscate) then
-			player=ObfuscateData(UnitName('player'),player);
-			currentHonor=player.thisWeekHonor;
-			lastHonor=player.lastWeekHonor;
+			currentHonor=player.thisWeekHonor * HonorSpy.db.char.modifier;
+			lastHonor=player.lastWeekHonor * HonorSpy.db.char.lastModifier;
 		end
 		HonorSpy:Print("Others see your current honor as: |cFFFFFF00"..currentHonor);
 		HonorSpy:Print("Others see your last week's honor as: |cFFFFFF00"..lastHonor);
@@ -509,11 +508,25 @@ function ObfuscateDisplayStatus()
 	end
 end
 
+function shallowcopy(orig) --from lua-users.org
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
 -- obfuscate personal data if found
 function ObfuscateRepack(msg, skip_yell)
 	if(HonorSpy.db.char.obfuscate==false) then return msg,skip_yell; end 
-	local ok, playerName, player = HonorSpy:Deserialize(msg);
-
+	local ok, playerName, playerRaw = HonorSpy:Deserialize(msg);
+	local player=shallowcopy(playerRaw);
 	if(not ok) then return msg, skip_yell; end
 	if (playerName=="filtered_players") then
 		for name, data in pairs(player) do
