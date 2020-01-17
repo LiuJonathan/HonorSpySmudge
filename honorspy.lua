@@ -416,7 +416,7 @@ function isFakePlayer(playerName)
 end
 
 function store_player(playerName, player)
-	if (player == nil or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then return end
+	if (player == nil or playerName==UnitName("player") or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then return end
 	
 	local player = table.copy(player);
 	local localPlayer = HonorSpy.db.factionrealm.currentStandings[playerName];
@@ -508,25 +508,11 @@ function ObfuscateDisplayStatus()
 	end
 end
 
-function shallowcopy(orig) --from lua-users.org
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in pairs(orig) do
-            copy[orig_key] = orig_value
-        end
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
-end
-
 -- obfuscate personal data if found
 function ObfuscateRepack(msg, skip_yell)
 	if(HonorSpy.db.char.obfuscate==false) then return msg,skip_yell; end 
-	local ok, playerName, playerRaw = HonorSpy:Deserialize(msg);
-	local player=shallowcopy(playerRaw);
+	local ok, playerName, player = HonorSpy:Deserialize(msg);
+	local player=table.copy(player);
 	if(not ok) then return msg, skip_yell; end
 	if (playerName=="filtered_players") then
 		for name, data in pairs(player) do
