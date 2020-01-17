@@ -543,7 +543,7 @@ end
 function ObfuscateCalculateRP(RP)
 	local rpAfterMod = RP*RPModifier;
 	if (RP % 5000 < rpAfterMod % 5000) then
-		RP = player.RP - ((RP % 5000) *0.8);
+		RP = RP - ((RP % 5000) *0.8);
 	else
 		RP=rpAfterMod;
 	end
