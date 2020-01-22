@@ -512,8 +512,8 @@ end
 function ObfuscateRepack(msg, skip_yell)
 	if(HonorSpy.db.char.obfuscate==false) then return msg,skip_yell; end 
 	local ok, playerName, player = HonorSpy:Deserialize(msg);
-	local player=table.copy(player);
 	if(not ok) then return msg, skip_yell; end
+	local player=table.copy(player);
 	if (playerName=="filtered_players") then
 		for name, data in pairs(player) do
 			if(name==UnitName("player")) then
