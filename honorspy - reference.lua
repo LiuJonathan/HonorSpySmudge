@@ -10,8 +10,6 @@ local playerName = UnitName("player");
 local callback = nil
 local nameToTest = nil
 local startRemovingFakes = false
-local lastSelfBroadcast=GetServerTime();
-local RPModifier = 0.95;
 
 function HonorSpy:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("HonorSpyDB", {
@@ -29,7 +27,7 @@ function HonorSpy:OnInitialize()
 			original_honor = 0
 		}
 	}, true)
-	
+
 	self:SecureHook("InspectUnit");
 	self:SecureHook("UnitPopup_ShowMenu");
 
@@ -47,8 +45,6 @@ function HonorSpy:OnInitialize()
 	HonorSpyGUI:PrepareGUI()
 	PrintWelcomeMsg();
 	DBHealthCheck()
-	
-	ObfuscateInitalize();
 end
 
 local inspectedPlayers = {}; -- stores last_checked time of all players met
@@ -199,10 +195,6 @@ end
 -- INSPECTION TRIGGERS
 function HonorSpy:UPDATE_MOUSEOVER_UNIT()
 	StartInspecting("mouseover")
-	if (GetServerTime() - lastSelfBroadcast > 60) then
-		broadcast(self:Serialize(UnitName('player'),HonorSpy.db.factionrealm.currentStandings[UnitName('player')]));
-		lastSelfBroadcast=GetServerTime();
-	end
 end
 function HonorSpy:PLAYER_TARGET_CHANGED()
 	StartInspecting("target")
@@ -234,27 +226,6 @@ local options = {
 			usage = L['player_name'],
 			get = false,
 			set = function(info, playerName) HonorSpy:Report(playerName) end
-		},	
-		toggle = {
-			type = 'execute',
-			name = 'Toggle the sending of faked data',
-			desc = 'Toggle the sending of faked data',
-			func = function() ObfuscateToggle() end
-		},
-		status = {
-			type='execute',
-			name = 'Display current status of faked data',
-			desc = 'Display current status of faked data',
-			func = function() ObfuscateDisplayStatus() end
-		},
-		modifier = {
-			type = 'range',
-			name = 'Sets modifier for faked data',
-			desc = 'Sets modifier for faked data',
-			min = 0.0,
-			max = 10.0,
-			step = 0.1;
-			set = function(info, modifier) HonorSpy.db.char.modifier=modifier/100; HonorSpy:Print("Modifier for fake data set to |cFFFFFF00"..modifier.."%.") end
 		},
 	}
 }
@@ -416,7 +387,7 @@ function isFakePlayer(playerName)
 end
 
 function store_player(playerName, player)
-	if (player == nil or playerName==UnitName("player") or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then return end
+	if (player == nil or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then return end
 	
 	local player = table.copy(player);
 	local localPlayer = HonorSpy.db.factionrealm.currentStandings[playerName];
@@ -444,7 +415,6 @@ function HonorSpy:OnCommReceive(prefix, message, distribution, sender)
 end
 
 function broadcast(msg, skip_yell)
-	msg, skip_yell = ObfuscateRepack(msg,skip_yell);
 	if (IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and IsInInstance()) then
 		HonorSpy:SendCommMessage(commPrefix, msg, "INSTANCE_CHAT");
 	elseif (IsInRaid()) then
@@ -457,112 +427,6 @@ function broadcast(msg, skip_yell)
 		HonorSpy:SendCommMessage(commPrefix, msg, "YELL");
 	end
 end
-
-function ObfuscateInitalize()
-	if(HonorSpy.db.char.modifier == nil) then
-		HonorSpy.db.char.modifier=0.9;
-	end
-	if(HonorSpy.db.char.lastModifier==nil) then
-		HonorSpy.db.char.lastModifier=1;
-	end
-	if(HonorSpy.db.char.obfuscate ==nil or HonorSpy.db.char.obfuscate==true) then
-		HonorSpy.db.char.obfuscate=true;
-		HonorSpy:Print("|cFFFF00FFHi ".. UnitName("player") .. "|r. |cFF00FF00Your HonorSpy is currently sending out faked data to others!"); 
-		HonorSpy:Print("Current honor modifier: |cFFFFFF00" .. (HonorSpy.db.char.modifier * 100).."%");
-	else
-		HonorSpy:Print("|cFFFF0000HonorSpy is sending your actual data!|r If you wish, reenable with /hs toggle");
-	end
-	
-end
-
-function ObfuscateToggle()
-	if(HonorSpy.db.char.obfuscate==false) then
-		HonorSpy.db.char.obfuscate=true;
-		HonorSpy:Print("|cFF00FF00HonorSpy will now broadcast faked data to others");
-	else
-		HonorSpy.db.char.obfuscate=false;
-		HonorSpy:Print("|cFFFF0000HonorSpy is no longer obfuscating data");
-	end
-end
-
-function ObfuscateDisplayStatus()
-	if(HonorSpy.db.char.obfuscate==true) then
-		HonorSpy:Print("|cFF00FF00Your HonorSpy is currently sending out faked data to others.");
-	else
-		HonorSpy:Print("|cFFFF0000Your HonorSpy is not obfuscating data!");
-	end
-	HonorSpy:Print("This week's honor modifier: |cFFFFFF00"..(HonorSpy.db.char.modifier * 100).."%");
-	HonorSpy:Print("Last week's honor modifier: |cFFFFFF00"..(HonorSpy.db.char.lastModifier * 100).."%");
-	HonorSpy:Print("RP modifier is fixed to |cFFFFFF0095%|r.");
-	HonorSpy:Print("Your RP will never be below the minimum for your rank.");
-	local player=HonorSpy.db.factionrealm.currentStandings[UnitName('player')];
-	if(player) then
-		local currentHonor, lastHonor, currentRP = player.thisWeekHonor, player.lastWeekHonor, player.RP*RPModifier;
-		if (HonorSpy.db.char.obfuscate) then
-			currentHonor=player.thisWeekHonor * HonorSpy.db.char.modifier;
-			lastHonor=player.lastWeekHonor * HonorSpy.db.char.lastModifier;
-		end
-		HonorSpy:Print("Others see your current honor as: |cFFFFFF00"..currentHonor);
-		HonorSpy:Print("Others see your last week's honor as: |cFFFFFF00"..lastHonor);
-		HonorSpy:Print("Others see your RP as: |cFFFFFF00"..ObfuscateCalculateRP(player.RP));
-	end
-end
-
--- obfuscate personal data if found
-function ObfuscateRepack(msg, skip_yell)
-	if(HonorSpy.db.char.obfuscate==false) then return msg,skip_yell; end 
-	local ok, playerName, player = HonorSpy:Deserialize(msg);
-	if(not ok) then return msg, skip_yell; end
-	local player=table.copy(player);
-	if (playerName=="filtered_players") then
-		for name, data in pairs(player) do
-			if(name==UnitName("player")) then
-				player[name]=ObfuscateData(name,data);
-			end
-		end
-	elseif (playerName==UnitName("player")) then
-		player=ObfuscateData(playerName,player);
-		skip_yell=false;
-	end
-	msg=HonorSpy:Serialize(playerName,player);
-	return msg, skip_yell;
-end
-
-function ObfuscateData(playerName,player) 
-	if (player == nil or playerName == nil or playerName:find("[%d%p%s%c%z]") or isFakePlayer(playerName) or not playerIsValid(player)) then 
-		return 		
-	end
-	player.thisWeekHonor=math.ceil(player.thisWeekHonor*HonorSpy.db.char.modifier);
-	player.lastWeekHonor=math.ceil(player.lastWeekHonor*HonorSpy.db.char.lastModifier);
-	player.RP=ObfuscateCalculateRP(player.RP);
-	player.last_checked=GetServerTime();
-	return player;
-end
-
-function ObfuscateCalculateRP(RP)
-	local rpAfterMod = RP*RPModifier;
-	if (RP % 5000 < rpAfterMod % 5000) then
-		RP = RP - ((RP % 5000) *0.8);
-	else
-		RP=rpAfterMod;
-	end
-	return math.ceil(RP);
-end
---[[
-function ObfuscateDisplayError(msg, countVar) then
-	if (not countVar) then
-		countVar="errorLimit";
-	end
-	if (_G[countVar]>1) then
-		HonorSpy:Print(msg);
-		_G[countVar]=_G[countVar]-1;
-	else if (_G[countVar]==1) then
-		HonorSpy:Print(msg);
-		HonorSpy:Print("Additional error messages will not be displayed. HonorSpy is likely not working correctly.");
-		_G[countVar]=_G[countVar]-1;
-	end
-	
-end]]
 
 -- Broadcast on death
 local last_send_time = 0;
@@ -689,9 +553,7 @@ end
 function HonorSpy:ResetWeek()
 	HonorSpy.db.factionrealm.last_reset = getResetTime();
 	HonorSpy:Purge()
-	HonorSpy.db.char.lastModifier=HonorSpy.db.char.modifier;
 	HonorSpy:Print(L["Weekly data was reset"]);
-	HonorSpy:Print("Honor modifier for last week's data has been updated!");
 end
 
 function HonorSpy:CheckNeedReset(skipUpdate)
